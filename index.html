@@ -1,0 +1,94 @@
+import { useState } from "react";
+
+export default function Home() {
+  const [selectedDates, setSelectedDates] = useState([]);
+  const [availableDates, setAvailableDates] = useState([]);
+
+  const handleDateSelect = (date) => {
+    const dateString = date.toDateString();
+    if (selectedDates.includes(dateString)) {
+      setSelectedDates(selectedDates.filter((d) => d !== dateString));
+    } else if (availableDates.includes(dateString)) {
+      setAvailableDates(availableDates.filter((d) => d !== dateString));
+      setSelectedDates([...selectedDates, dateString]);
+    } else {
+      setAvailableDates([...availableDates, dateString]);
+    }
+  };
+
+  const isDateSelected = (date) => selectedDates.includes(date.toDateString());
+  const isDateAvailable = (date) => availableDates.includes(date.toDateString());
+
+  const renderCalendar = () => {
+    const today = new Date();
+    const months = [];
+    for (let month = 0; month < 12; month++) {
+      const days = [];
+      const firstDay = new Date(today.getFullYear(), month, 1).getDay();
+      const daysInMonth = new Date(today.getFullYear(), month + 1, 0).getDate();
+      for (let i = 0; i < firstDay; i++) {
+        days.push(<div key={`empty-${i}`} className="p-2"></div>);
+      }
+      for (let day = 1; day <= daysInMonth; day++) {
+        const currentDate = new Date(today.getFullYear(), month, day);
+        const isSelected = isDateSelected(currentDate);
+        const isAvailable = isDateAvailable(currentDate);
+        days.push(
+          <div
+            key={day}
+            className={`p-2 border rounded cursor-pointer text-center ${
+              isSelected ? "bg-green-300" : isAvailable ? "bg-purple-300" : ""
+            }`}
+            onClick={() => handleDateSelect(currentDate)}
+          >
+            {day}
+          </div>
+        );
+      }
+      months.push(
+        <div key={month} className="mb-8">
+          <h2 className="text-center font-bold mb-2">
+            {new Date(today.getFullYear(), month).toLocaleString("default", {
+              month: "long",
+            })}{" "}
+            {today.getFullYear()}
+          </h2>
+          <div className="grid grid-cols-7 gap-1">{days}</div>
+        </div>
+      );
+    }
+    return months;
+  };
+
+  return (
+    <div className="p-4 max-w-2xl mx-auto">
+      <h1 className="text-2xl font-bold mb-4 text-center">
+        Kalendarz sesji zdjęciowych Paulina
+      </h1>
+      {renderCalendar()}
+      <div className="mt-4">
+        <h3 className="font-semibold">Zajęte terminy:</h3>
+        <ul>
+          {selectedDates.map((date, idx) => (
+            <li key={idx}>{date}</li>
+          ))}
+        </ul>
+        <h3 className="font-semibold mt-2">Dostępne terminy:</h3>
+        <ul>
+          {availableDates.map((date, idx) => (
+            <li key={idx}>{date}</li>
+          ))}
+        </ul>
+        <button
+          className="mt-4 px-4 py-2 bg-red-500 text-white rounded"
+          onClick={() => {
+            setSelectedDates([]);
+            setAvailableDates([]);
+          }}
+        >
+          Wyczyść terminy
+        </button>
+      </div>
+    </div>
+  );
+}
